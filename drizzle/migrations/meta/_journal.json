@@ -1,0 +1,20 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1788590464881,
+      "tag": "0000_create_hardware_fit_schema",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1788590542447,
+      "tag": "0001_seed_catalog_items",
+      "breakpoints": true
+    }
+  ]
+}
