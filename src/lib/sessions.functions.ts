@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import type { UIMessage } from "ai";
+
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Pick, Requirement } from "@/lib/analysis-types";
@@ -74,7 +74,8 @@ export const getSession = createServerFn({ method: "GET" })
 
     return {
       session,
-      messages: (messageRows ?? []).map((row) => row.ui_message as unknown as UIMessage),
+      // Kept as plain JSON across the RPC boundary; the client casts to UIMessage[].
+      messages: (messageRows ?? []).map((row) => row.ui_message as Record<string, unknown>),
       profile: profileRow
         ? {
             summary: profileRow.summary,

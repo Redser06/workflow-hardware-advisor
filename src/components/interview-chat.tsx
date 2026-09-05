@@ -178,14 +178,8 @@ export function InterviewChat({
                         <ToolHeader
                           type={part.type as `tool-${string}`}
                           state={toolPart.state}
-                          title={
-                            <span className="flex items-center gap-2">
-                              <Icon className="size-3.5" />
-                              <span className="label-caps text-foreground">
-                                {meta?.label ?? name}
-                              </span>
-                            </span>
-                          }
+                          title={meta?.label ?? name}
+                          icon={<Icon className="size-3.5 text-primary" />}
                         />
                         <ToolContent>
                           <ToolInput input={toolPart.input} />
