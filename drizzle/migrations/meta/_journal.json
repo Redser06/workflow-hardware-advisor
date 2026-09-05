@@ -15,6 +15,13 @@
       "when": 1788590542447,
       "tag": "0001_seed_catalog_items",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1788620105960,
+      "tag": "0002_seed_high_memory_thin_laptops",
+      "breakpoints": true
     }
   ]
 }
