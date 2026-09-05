@@ -119,9 +119,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </nav>
 
         <div className="border-t border-rule px-4 py-3">
-          <p className="figure truncate text-[11px] text-muted-foreground">
-            {session.user.email}
-          </p>
+          <p className="figure truncate text-[11px] text-muted-foreground">{session.user.email}</p>
           <button
             type="button"
             onClick={() => {

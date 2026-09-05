@@ -34,13 +34,10 @@ export async function lookupPrice(args: {
   const query = `${args.brand} ${args.name} price buy`;
 
   try {
-    const res = await fetch(
-      `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`,
-      {
-        headers: { "user-agent": UA, accept: "text/html" },
-        signal: AbortSignal.timeout(9000),
-      },
-    );
+    const res = await fetch(`https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`, {
+      headers: { "user-agent": UA, accept: "text/html" },
+      signal: AbortSignal.timeout(9000),
+    });
 
     if (!res.ok) throw new Error(`search returned ${res.status}`);
     const html = await res.text();

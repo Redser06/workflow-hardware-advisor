@@ -41,10 +41,22 @@ const STEPS = [
 ];
 
 const CONFUSIONS = [
-  ["Generation beats tier", "A current i5 usually outruns an older i7. The number after the name matters more than the letter in front of it."],
-  ["Soldered memory is final", "Most thin laptops cannot be given more memory later. The figure you buy is the figure you keep."],
-  ["Unified memory is shared", "On Apple machines the processor and graphics draw from the same pool, so 16 GB is not 16 GB plus graphics."],
-  ["Graphics memory sets model size", "For running AI models locally, the video memory figure decides what fits. System memory does not rescue it."],
+  [
+    "Generation beats tier",
+    "A current i5 usually outruns an older i7. The number after the name matters more than the letter in front of it.",
+  ],
+  [
+    "Soldered memory is final",
+    "Most thin laptops cannot be given more memory later. The figure you buy is the figure you keep.",
+  ],
+  [
+    "Unified memory is shared",
+    "On Apple machines the processor and graphics draw from the same pool, so 16 GB is not 16 GB plus graphics.",
+  ],
+  [
+    "Graphics memory sets model size",
+    "For running AI models locally, the video memory figure decides what fits. System memory does not rescue it.",
+  ],
 ];
 
 function Landing() {

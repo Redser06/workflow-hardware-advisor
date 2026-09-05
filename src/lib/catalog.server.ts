@@ -56,10 +56,7 @@ export async function searchCatalog(filter: CatalogFilter) {
 }
 
 export async function getCatalogItemsBySlug(slugs: string[]) {
-  const { data, error } = await supabaseAdmin
-    .from("catalog_items")
-    .select("*")
-    .in("slug", slugs);
+  const { data, error } = await supabaseAdmin.from("catalog_items").select("*").in("slug", slugs);
   if (error) {
     console.error("[catalog] slug lookup failed", error.message);
     return [];

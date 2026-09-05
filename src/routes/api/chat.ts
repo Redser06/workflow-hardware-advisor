@@ -42,14 +42,14 @@ const catalogFilterSchema = z.object({
   min_cpu_multicore_score: z
     .number()
     .optional()
-    .describe("0-100 class score. ~30 office work, ~55 heavy multitasking, ~75 sustained rendering"),
+    .describe(
+      "0-100 class score. ~30 office work, ~55 heavy multitasking, ~75 sustained rendering",
+    ),
   min_cpu_singlecore_score: z.number().optional(),
   max_price_usd: z.number().optional(),
   max_weight_kg: z.number().optional(),
   min_battery_hours: z.number().optional(),
-  form_factors: z
-    .array(z.enum(["laptop", "mini_desktop", "tower_desktop"]))
-    .optional(),
+  form_factors: z.array(z.enum(["laptop", "mini_desktop", "tower_desktop"])).optional(),
   always_on_only: z.boolean().optional(),
   needs_upgradeable_ram: z.boolean().optional(),
 });

@@ -124,9 +124,9 @@ export function InterviewChat({
                 Describe the work, not the machine.
               </h2>
               <p className="mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
-                Tell me what you actually do on it — the programs, the file sizes, whether you
-                carry it, whether it stays on. I will ask until the answers are specific enough to
-                act on, then name three machines and the prices they sell for right now.
+                Tell me what you actually do on it — the programs, the file sizes, whether you carry
+                it, whether it stays on. I will ask until the answers are specific enough to act on,
+                then name three machines and the prices they sell for right now.
               </p>
               <div className="mt-6 space-y-2">
                 <span className="label-caps">Start with something like</span>
@@ -166,7 +166,8 @@ export function InterviewChat({
                     const name = toolNameOf(part.type);
                     const label = TOOL_META[name] ?? name;
                     const toolPart = part as unknown as {
-                      state: "input-streaming" | "input-available" | "output-available" | "output-error";
+                      state:
+                        "input-streaming" | "input-available" | "output-available" | "output-error";
                       input?: unknown;
                       output?: unknown;
                       errorText?: string;

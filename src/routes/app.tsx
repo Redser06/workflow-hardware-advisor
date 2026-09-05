@@ -52,8 +52,8 @@ function SessionIndex() {
       <div className="mx-auto max-w-3xl">
         <h1 className="text-2xl font-semibold text-foreground">Analyses</h1>
         <p className="mt-1.5 text-sm text-muted-foreground">
-          Each analysis is one workflow: the questions, the requirement profile it produced, and
-          the three machines that met it.
+          Each analysis is one workflow: the questions, the requirement profile it produced, and the
+          three machines that met it.
         </p>
 
         <button
