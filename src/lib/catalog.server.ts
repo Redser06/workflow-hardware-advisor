@@ -4,18 +4,18 @@ import type { Database } from "@/integrations/supabase/types";
 export type CatalogItem = Database["public"]["Tables"]["catalog_items"]["Row"];
 
 export type CatalogFilter = {
-  min_ram_gb?: number;
-  min_storage_gb?: number;
-  min_vram_gb?: number;
-  min_cpu_multicore_score?: number;
-  min_cpu_singlecore_score?: number;
-  max_price_usd?: number;
-  max_weight_kg?: number;
-  min_battery_hours?: number;
-  form_factors?: string[];
-  always_on_only?: boolean;
-  needs_upgradeable_ram?: boolean;
-  limit?: number;
+  min_ram_gb?: number | undefined;
+  min_storage_gb?: number | undefined;
+  min_vram_gb?: number | undefined;
+  min_cpu_multicore_score?: number | undefined;
+  min_cpu_singlecore_score?: number | undefined;
+  max_price_usd?: number | undefined;
+  max_weight_kg?: number | undefined;
+  min_battery_hours?: number | undefined;
+  form_factors?: string[] | undefined;
+  always_on_only?: boolean | undefined;
+  needs_upgradeable_ram?: boolean | undefined;
+  limit?: number | undefined;
 };
 
 /**
