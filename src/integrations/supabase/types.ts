@@ -14,7 +14,280 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      catalog_items: {
+        Row: {
+          always_on_suitable: boolean
+          baseline_price_checked_at: string
+          baseline_price_usd: number
+          battery_hours: number | null
+          brand: string
+          buy_url: string | null
+          cpu_cores: number | null
+          cpu_generation: string | null
+          cpu_multicore_score: number | null
+          cpu_name: string
+          cpu_singlecore_score: number | null
+          cpu_year: number | null
+          created_at: string
+          display_desc: string | null
+          form_factor: string
+          gpu_name: string | null
+          gpu_score: number | null
+          gpu_vram_gb: number | null
+          id: string
+          idle_watts: number | null
+          load_watts: number | null
+          name: string
+          notes: string | null
+          os: string | null
+          ram_gb: number
+          ram_max_gb: number | null
+          ram_type: string | null
+          ram_upgradeable: boolean
+          segment: string
+          slug: string
+          storage_gb: number
+          storage_type: string | null
+          storage_upgradeable: boolean
+          sustained_thermal_note: string | null
+          unified_memory: boolean
+          weight_kg: number | null
+        }
+        Insert: {
+          always_on_suitable?: boolean
+          baseline_price_checked_at?: string
+          baseline_price_usd: number
+          battery_hours?: number | null
+          brand: string
+          buy_url?: string | null
+          cpu_cores?: number | null
+          cpu_generation?: string | null
+          cpu_multicore_score?: number | null
+          cpu_name: string
+          cpu_singlecore_score?: number | null
+          cpu_year?: number | null
+          created_at?: string
+          display_desc?: string | null
+          form_factor: string
+          gpu_name?: string | null
+          gpu_score?: number | null
+          gpu_vram_gb?: number | null
+          id?: string
+          idle_watts?: number | null
+          load_watts?: number | null
+          name: string
+          notes?: string | null
+          os?: string | null
+          ram_gb: number
+          ram_max_gb?: number | null
+          ram_type?: string | null
+          ram_upgradeable?: boolean
+          segment: string
+          slug: string
+          storage_gb: number
+          storage_type?: string | null
+          storage_upgradeable?: boolean
+          sustained_thermal_note?: string | null
+          unified_memory?: boolean
+          weight_kg?: number | null
+        }
+        Update: {
+          always_on_suitable?: boolean
+          baseline_price_checked_at?: string
+          baseline_price_usd?: number
+          battery_hours?: number | null
+          brand?: string
+          buy_url?: string | null
+          cpu_cores?: number | null
+          cpu_generation?: string | null
+          cpu_multicore_score?: number | null
+          cpu_name?: string
+          cpu_singlecore_score?: number | null
+          cpu_year?: number | null
+          created_at?: string
+          display_desc?: string | null
+          form_factor?: string
+          gpu_name?: string | null
+          gpu_score?: number | null
+          gpu_vram_gb?: number | null
+          id?: string
+          idle_watts?: number | null
+          load_watts?: number | null
+          name?: string
+          notes?: string | null
+          os?: string | null
+          ram_gb?: number
+          ram_max_gb?: number | null
+          ram_type?: string | null
+          ram_upgradeable?: boolean
+          segment?: string
+          slug?: string
+          storage_gb?: number
+          storage_type?: string | null
+          storage_upgradeable?: boolean
+          sustained_thermal_note?: string | null
+          unified_memory?: boolean
+          weight_kg?: number | null
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          created_at: string
+          id: string
+          role: string
+          session_id: string
+          ui_message: Json
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: string
+          session_id: string
+          ui_message: Json
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: string
+          session_id?: string
+          ui_message?: Json
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          email: string | null
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id?: string
+        }
+        Relationships: []
+      }
+      recommendations: {
+        Row: {
+          created_at: string
+          id: string
+          picks: Json
+          session_id: string
+          user_id: string
+          workload_profile_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          picks: Json
+          session_id: string
+          user_id: string
+          workload_profile_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          picks?: Json
+          session_id?: string
+          user_id?: string
+          workload_profile_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recommendations_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recommendations_workload_profile_id_fkey"
+            columns: ["workload_profile_id"]
+            isOneToOne: false
+            referencedRelation: "workload_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sessions: {
+        Row: {
+          created_at: string
+          id: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          title?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      workload_profiles: {
+        Row: {
+          created_at: string
+          id: string
+          requirements: Json
+          session_id: string
+          summary: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          requirements: Json
+          session_id: string
+          summary: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          requirements?: Json
+          session_id?: string
+          summary?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workload_profiles_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
