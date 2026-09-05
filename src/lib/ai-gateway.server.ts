@@ -11,6 +11,16 @@ export function createLovableAiGatewayProvider(apiKey: string) {
     headers: {
       "Lovable-API-Key": apiKey,
     },
+    // GPT-5.6 chat completions reject function tools unless reasoning is off,
+    // and the AI SDK has no portable option for that flag, so set it on the body.
+    fetch: async (input, init) => {
+      if (init?.body && typeof init.body === "string") {
+        const body = JSON.parse(init.body) as Record<string, unknown>;
+        body["reasoning_effort"] = "none";
+        return fetch(input, { ...init, body: JSON.stringify(body) });
+      }
+      return fetch(input, init);
+    },
   });
 }
 

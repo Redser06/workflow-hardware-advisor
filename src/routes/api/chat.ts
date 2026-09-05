@@ -144,9 +144,6 @@ export const Route = createFileRoute("/api/chat")({
           system: SYSTEM_PROMPT,
           messages: await convertToModelMessages(messages),
           stopWhen: stepCountIs(50),
-          providerOptions: {
-            lovable: { reasoning_effort: "none" },
-          },
           tools: {
             search_catalog: tool({
               description:
