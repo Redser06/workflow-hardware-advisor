@@ -2,6 +2,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useCallback, useState } from "react";
+import type { UIMessage } from "ai";
 
 import { AppShell } from "@/components/app-shell";
 import { InterviewChat } from "@/components/interview-chat";
@@ -131,7 +132,7 @@ function SessionView() {
         >
           <InterviewChat
             sessionId={sessionId}
-            initialMessages={data.messages}
+            initialMessages={data.messages as unknown as UIMessage[]}
             onAnalysisUpdated={onAnalysisUpdated}
           />
         </div>

@@ -1,7 +1,6 @@
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { CircuitBoard, Cpu, HardDrive, ListChecks, Tag } from "lucide-react";
 import { toast } from "sonner";
 
 import {
@@ -27,11 +26,11 @@ import {
 import { BrandMark } from "@/components/brand-mark";
 import { supabase } from "@/integrations/supabase/client";
 
-const TOOL_META: Record<string, { label: string; icon: typeof Cpu }> = {
-  search_catalog: { label: "Filtering the machine catalog", icon: CircuitBoard },
-  check_price: { label: "Checking current price", icon: Tag },
-  record_workload_profile: { label: "Writing the workload profile", icon: ListChecks },
-  record_recommendation: { label: "Writing the three picks", icon: HardDrive },
+const TOOL_META: Record<string, string> = {
+  search_catalog: "Filtering the machine catalog",
+  check_price: "Checking current price",
+  record_workload_profile: "Writing the workload profile",
+  record_recommendation: "Writing the three picks",
 };
 
 const OPENERS = [
@@ -165,8 +164,7 @@ export function InterviewChat({
 
                   if (part.type.startsWith("tool-")) {
                     const name = toolNameOf(part.type);
-                    const meta = TOOL_META[name];
-                    const Icon = meta?.icon ?? Cpu;
+                    const label = TOOL_META[name] ?? name;
                     const toolPart = part as unknown as {
                       state: "input-streaming" | "input-available" | "output-available" | "output-error";
                       input?: unknown;
@@ -178,8 +176,7 @@ export function InterviewChat({
                         <ToolHeader
                           type={part.type as `tool-${string}`}
                           state={toolPart.state}
-                          title={meta?.label ?? name}
-                          icon={<Icon className="size-3.5 text-primary" />}
+                          title={label}
                         />
                         <ToolContent>
                           <ToolInput input={toolPart.input} />
