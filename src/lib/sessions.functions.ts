@@ -3,6 +3,7 @@ import { z } from "zod";
 
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import type { Json } from "@/integrations/supabase/types";
 import type { Pick, Requirement } from "@/lib/analysis-types";
 
 export const listSessions = createServerFn({ method: "GET" })
@@ -75,7 +76,7 @@ export const getSession = createServerFn({ method: "GET" })
     return {
       session,
       // Kept as plain JSON across the RPC boundary; the client casts to UIMessage[].
-      messages: (messageRows ?? []).map((row) => row.ui_message as Record<string, unknown>),
+      messages: (messageRows ?? []).map((row) => row.ui_message as Json),
       profile: profileRow
         ? {
             summary: profileRow.summary,
