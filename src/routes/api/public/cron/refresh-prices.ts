@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { authenticateCronRequest } from "@/integrations/supabase/cron-auth";
+import { PRICE_REFRESH_BATCH } from "@/lib/limits";
 import { probeEstimatedPrice } from "@/lib/price-lookup.server";
 
 /**
@@ -24,7 +25,7 @@ export const Route = createFileRoute("/api/public/cron/refresh-prices")({
           .from("catalog_items")
           .select("slug, name, brand, baseline_price_usd, price_confidence")
           .order("baseline_price_checked_at", { ascending: true })
-          .limit(40);
+          .limit(PRICE_REFRESH_BATCH);
 
         if (error) {
           return Response.json({ ok: false, error: error.message }, { status: 500 });
