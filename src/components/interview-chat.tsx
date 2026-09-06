@@ -130,9 +130,18 @@ export function InterviewChat({
               </p>
               <ul className="mt-3 max-w-md list-disc space-y-1 pl-5 text-sm leading-relaxed text-muted-foreground">
                 <li>The exact programs you run, and how many at once.</li>
-                <li>File sizes and project scales — RAW photos, 4K timelines, spreadsheets with 100k rows.</li>
-                <li>AI workloads: local models (name the parameter size), or cloud models and APIs you lean on full time.</li>
-                <li>Whether it travels daily or sits plugged in — and whether it must run 24/7 unattended.</li>
+                <li>
+                  File sizes and project scales — RAW photos, 4K timelines, spreadsheets with 100k
+                  rows.
+                </li>
+                <li>
+                  AI workloads: local models (name the parameter size), or cloud models and APIs you
+                  lean on full time.
+                </li>
+                <li>
+                  Whether it travels daily or sits plugged in — and whether it must run 24/7
+                  unattended.
+                </li>
                 <li>How many years it must last, and the budget ceiling.</li>
               </ul>
               <p className="mt-3 max-w-md text-sm leading-relaxed text-muted-foreground">

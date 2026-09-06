@@ -40,6 +40,8 @@ export type Database = {
           name: string
           notes: string | null
           os: string | null
+          price_confidence: string
+          price_source_url: string | null
           ram_gb: number
           ram_max_gb: number | null
           ram_type: string | null
@@ -55,7 +57,7 @@ export type Database = {
         }
         Insert: {
           always_on_suitable?: boolean
-          baseline_price_checked_at?: string
+          baseline_price_checked_at: string
           baseline_price_usd: number
           battery_hours?: number | null
           brand: string
@@ -78,6 +80,8 @@ export type Database = {
           name: string
           notes?: string | null
           os?: string | null
+          price_confidence?: string
+          price_source_url?: string | null
           ram_gb: number
           ram_max_gb?: number | null
           ram_type?: string | null
@@ -116,6 +120,8 @@ export type Database = {
           name?: string
           notes?: string | null
           os?: string | null
+          price_confidence?: string
+          price_source_url?: string | null
           ram_gb?: number
           ram_max_gb?: number | null
           ram_type?: string | null
@@ -133,6 +139,7 @@ export type Database = {
       }
       messages: {
         Row: {
+          client_message_id: string | null
           created_at: string
           id: string
           role: string
@@ -141,6 +148,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          client_message_id?: string | null
           created_at?: string
           id?: string
           role: string
@@ -149,6 +157,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          client_message_id?: string | null
           created_at?: string
           id?: string
           role?: string
