@@ -14,6 +14,7 @@ import { Route as AppRouteImport } from './routes/app'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as SessionSessionIdRouteImport } from './routes/session.$sessionId'
+import { Route as ApiPublicCronRefreshPricesRouteImport } from './routes/api/public/cron/refresh-prices'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -40,6 +41,12 @@ const SessionSessionIdRoute = SessionSessionIdRouteImport.update({
   path: '/session/$sessionId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicCronRefreshPricesRoute =
+  ApiPublicCronRefreshPricesRouteImport.update({
+    id: '/api/public/cron/refresh-prices',
+    path: '/api/public/cron/refresh-prices',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -47,6 +54,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/api/chat': typeof ApiChatRoute
   '/session/$sessionId': typeof SessionSessionIdRoute
+  '/api/public/cron/refresh-prices': typeof ApiPublicCronRefreshPricesRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -54,6 +62,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/api/chat': typeof ApiChatRoute
   '/session/$sessionId': typeof SessionSessionIdRoute
+  '/api/public/cron/refresh-prices': typeof ApiPublicCronRefreshPricesRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -62,13 +71,33 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/api/chat': typeof ApiChatRoute
   '/session/$sessionId': typeof SessionSessionIdRoute
+  '/api/public/cron/refresh-prices': typeof ApiPublicCronRefreshPricesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/app' | '/auth' | '/api/chat' | '/session/$sessionId'
+  fullPaths:
+    | '/'
+    | '/app'
+    | '/auth'
+    | '/api/chat'
+    | '/session/$sessionId'
+    | '/api/public/cron/refresh-prices'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/app' | '/auth' | '/api/chat' | '/session/$sessionId'
-  id: '__root__' | '/' | '/app' | '/auth' | '/api/chat' | '/session/$sessionId'
+  to:
+    | '/'
+    | '/app'
+    | '/auth'
+    | '/api/chat'
+    | '/session/$sessionId'
+    | '/api/public/cron/refresh-prices'
+  id:
+    | '__root__'
+    | '/'
+    | '/app'
+    | '/auth'
+    | '/api/chat'
+    | '/session/$sessionId'
+    | '/api/public/cron/refresh-prices'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -77,6 +106,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ApiChatRoute: typeof ApiChatRoute
   SessionSessionIdRoute: typeof SessionSessionIdRoute
+  ApiPublicCronRefreshPricesRoute: typeof ApiPublicCronRefreshPricesRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -116,6 +146,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SessionSessionIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/cron/refresh-prices': {
+      id: '/api/public/cron/refresh-prices'
+      path: '/api/public/cron/refresh-prices'
+      fullPath: '/api/public/cron/refresh-prices'
+      preLoaderRoute: typeof ApiPublicCronRefreshPricesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -125,6 +162,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ApiChatRoute: ApiChatRoute,
   SessionSessionIdRoute: SessionSessionIdRoute,
+  ApiPublicCronRefreshPricesRoute: ApiPublicCronRefreshPricesRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

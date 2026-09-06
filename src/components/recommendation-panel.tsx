@@ -2,7 +2,7 @@ import {
   FORM_FACTOR_LABEL,
   TIER_LABEL,
   TIER_NOTE,
-  formatCheckedAt,
+  describePrice,
   formatUsd,
   type Pick,
 } from "@/lib/analysis-types";
@@ -20,6 +20,7 @@ function SpecRow({ label, value }: { label: string; value: string }) {
 
 function PickCard({ pick }: { pick: Pick }) {
   const m = pick.machine;
+  const price = describePrice(pick);
   const memoryNote = m.unified_memory
     ? `${m.ram_gb} GB unified`
     : `${m.ram_gb} GB${m.ram_upgradeable ? ` · to ${m.ram_max_gb ?? "?"} GB` : " · soldered"}`;
@@ -29,7 +30,10 @@ function PickCard({ pick }: { pick: Pick }) {
       <header className="border-b border-rule px-4 py-3">
         <div className="flex items-baseline justify-between gap-3">
           <span className="label-caps text-signal">{TIER_LABEL[pick.tier]}</span>
-          <span className="figure text-lg text-foreground">{formatUsd(pick.price_usd)}</span>
+          <span className="figure text-lg text-foreground">
+            {formatUsd(pick.price_usd)}
+            {price.trusted ? "" : <span className="ml-1 text-[10px] text-under">est.</span>}
+          </span>
         </div>
         <p className="mt-0.5 text-[11px] leading-tight text-muted-foreground">
           {TIER_NOTE[pick.tier]}
@@ -45,14 +49,12 @@ function PickCard({ pick }: { pick: Pick }) {
 
         <p
           className={
-            pick.price_live
+            price.trusted
               ? "figure mt-2 text-[11px] text-muted-foreground"
               : "figure mt-2 text-[11px] text-under"
           }
         >
-          {pick.price_live
-            ? `price checked ${formatCheckedAt(pick.price_checked_at)}`
-            : `not freshly checked — catalog baseline as of ${formatCheckedAt(pick.price_checked_at)}`}
+          {price.text}
         </p>
       </div>
 

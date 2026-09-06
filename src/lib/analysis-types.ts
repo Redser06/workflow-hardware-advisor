@@ -36,11 +36,16 @@ export type Machine = {
   buy_url: string | null;
 };
 
+export type PriceConfidence = "verified" | "estimated" | "unverified";
+
 export type Pick = {
   tier: PickTier;
   catalog_slug: string;
   price_usd: number;
-  price_live: boolean;
+  /** Set server-side from the price lookup; never from the model. */
+  price_confidence?: PriceConfidence;
+  price_source?: string | null;
+  price_note?: string;
   price_checked_at: string;
   fits_because: string;
   gives_up: string;
@@ -67,6 +72,28 @@ export const FORM_FACTOR_LABEL: Record<string, string> = {
 
 export function formatUsd(value: number) {
   return `$${value.toLocaleString("en-US")}`;
+}
+
+/** Plain-language provenance line for a price. Never claims a check that did not happen. */
+export function describePrice(pick: Pick): { text: string; trusted: boolean } {
+  const confidence: PriceConfidence = pick.price_confidence ?? "unverified";
+  const day = formatDay(pick.price_checked_at);
+  if (confidence === "verified") {
+    return { text: `price confirmed against a retail listing on ${day}`, trusted: true };
+  }
+  if (confidence === "estimated") {
+    return {
+      text: `estimate from public listings on ${day} — confirm with the retailer`,
+      trusted: false,
+    };
+  }
+  return { text: `catalog baseline from ${day} — not independently confirmed`, trusted: false };
+}
+
+export function formatDay(iso: string) {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "an unknown date";
+  return date.toISOString().slice(0, 10);
 }
 
 export function formatCheckedAt(iso: string) {
