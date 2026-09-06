@@ -34,9 +34,10 @@ const TOOL_META: Record<string, string> = {
 };
 
 const OPENERS = [
-  "I'm a design student, I carry my laptop every day and I edit photos in Lightroom.",
-  "I want a machine that runs a 30B local model as an agent, on all night.",
-  "Accounting work, 40 browser tabs, two big spreadsheets, budget is $900.",
+  "I'm a design student. Lightroom and Photoshop all day, 45 MB RAW files, laptop comes with me everywhere. Budget $1,200.",
+  "I want a box that runs a 30B local model as an agent, on 24/7, unattended. It sits in a closet, so noise and idle power matter.",
+  "I run cloud models full time — the heavy lifting is API calls — but I need 40+ tabs, Docker, and two 4K monitors. Budget $1,500.",
+  "Accounting. Two big spreadsheets, 40 browser tabs, QuickBooks. Nothing fancy, but it has to last five years. Budget is $900.",
 ];
 
 function toolNameOf(type: string) {
@@ -124,9 +125,19 @@ export function InterviewChat({
                 Describe the work, not the machine.
               </h2>
               <p className="mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
-                Tell me what you actually do on it — the programs, the file sizes, whether you carry
-                it, whether it stays on. I will ask until the answers are specific enough to act on,
-                then name three machines and the prices they sell for right now.
+                Be open and specific up front — the more you say in your first message, the fewer
+                questions I have to ask. Cover what you can of:
+              </p>
+              <ul className="mt-3 max-w-md list-disc space-y-1 pl-5 text-sm leading-relaxed text-muted-foreground">
+                <li>The exact programs you run, and how many at once.</li>
+                <li>File sizes and project scales — RAW photos, 4K timelines, spreadsheets with 100k rows.</li>
+                <li>AI workloads: local models (name the parameter size), or cloud models and APIs you lean on full time.</li>
+                <li>Whether it travels daily or sits plugged in — and whether it must run 24/7 unattended.</li>
+                <li>How many years it must last, and the budget ceiling.</li>
+              </ul>
+              <p className="mt-3 max-w-md text-sm leading-relaxed text-muted-foreground">
+                I will fill gaps with stated assumptions, then name three machines and the prices
+                they sell for right now.
               </p>
               <div className="mt-6 space-y-2">
                 <span className="label-caps">Start with something like</span>
