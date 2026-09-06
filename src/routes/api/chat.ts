@@ -8,7 +8,6 @@ import { readStoredPrice, type PriceResult } from "@/lib/price-lookup.server";
 import { DAILY_MESSAGE_LIMIT, MAX_STEPS } from "@/lib/limits";
 import { bearerFromRequest, verifyBearer } from "@/lib/verify-bearer.server";
 
-
 const SYSTEM_PROMPT = `You are Hardware Fit, a hardware buying analyst.
 
 VOICE
