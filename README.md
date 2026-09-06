@@ -46,13 +46,13 @@ npm run lint
 
 Provided automatically by Lovable Cloud; needed if you run this elsewhere.
 
-| Variable | Where | Purpose |
-| --- | --- | --- |
-| `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` | browser | database + auth |
-| `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY` | server | RLS-scoped server queries |
-| `SUPABASE_SERVICE_ROLE_KEY` | server | background price job only |
-| `LOVABLE_API_KEY` | server | AI gateway |
-| `LOVABLE_CRON_SECRET` | server | authenticates the price job |
+| Variable                                             | Where   | Purpose                     |
+| ---------------------------------------------------- | ------- | --------------------------- |
+| `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` | browser | database + auth             |
+| `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`           | server  | RLS-scoped server queries   |
+| `SUPABASE_SERVICE_ROLE_KEY`                          | server  | background price job only   |
+| `LOVABLE_API_KEY`                                    | server  | AI gateway                  |
+| `LOVABLE_CRON_SECRET`                                | server  | authenticates the price job |
 
 ## The price job
 
