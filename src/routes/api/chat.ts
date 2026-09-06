@@ -5,12 +5,9 @@ import { z } from "zod";
 import { CHAT_MODEL, createLovableAiGatewayProvider } from "@/lib/ai-gateway.server";
 import { searchCatalog, getCatalogItemsBySlug } from "@/lib/catalog.server";
 import { readStoredPrice, type PriceResult } from "@/lib/price-lookup.server";
+import { DAILY_MESSAGE_LIMIT, MAX_STEPS } from "@/lib/limits";
 import { bearerFromRequest, verifyBearer } from "@/lib/verify-bearer.server";
 
-/** Per-user daily ceiling on chat turns. Protects the shared AI budget. */
-const DAILY_MESSAGE_LIMIT = 80;
-/** Tool-call budget for one reply. Four tools, a handful of retries, no runaway loops. */
-const MAX_STEPS = 20;
 
 const SYSTEM_PROMPT = `You are Hardware Fit, a hardware buying analyst.
 

@@ -1,12 +1,12 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireAuth } from "@/lib/require-auth";
 import type { Json } from "@/integrations/supabase/types";
 import type { Pick, Requirement } from "@/lib/analysis-types";
 
 export const listSessions = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAuth])
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
       .from("sessions")
@@ -17,7 +17,7 @@ export const listSessions = createServerFn({ method: "GET" })
   });
 
 export const createSession = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAuth])
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
       .from("sessions")
@@ -29,7 +29,7 @@ export const createSession = createServerFn({ method: "POST" })
   });
 
 export const deleteSession = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAuth])
   .inputValidator((input: unknown) => z.object({ id: z.string() }).parse(input))
   .handler(async ({ context, data }) => {
     const { error } = await context.supabase.from("sessions").delete().eq("id", data.id);
@@ -38,7 +38,7 @@ export const deleteSession = createServerFn({ method: "POST" })
   });
 
 export const getSession = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAuth])
   .inputValidator((input: unknown) => z.object({ id: z.string() }).parse(input))
   .handler(async ({ context, data }) => {
     const { data: session, error } = await context.supabase

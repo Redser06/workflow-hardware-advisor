@@ -43,7 +43,7 @@ export type Pick = {
   catalog_slug: string;
   price_usd: number;
   /** Set server-side from the price lookup; never from the model. */
-  price_confidence?: PriceConfidence;
+  price_confidence: PriceConfidence;
   price_source?: string | null;
   price_note?: string;
   price_checked_at: string;
@@ -76,7 +76,7 @@ export function formatUsd(value: number) {
 
 /** Plain-language provenance line for a price. Never claims a check that did not happen. */
 export function describePrice(pick: Pick): { text: string; trusted: boolean } {
-  const confidence: PriceConfidence = pick.price_confidence ?? "unverified";
+  const confidence: PriceConfidence = pick.price_confidence;
   const day = formatDay(pick.price_checked_at);
   if (confidence === "verified") {
     return { text: `price confirmed against a retail listing on ${day}`, trusted: true };
