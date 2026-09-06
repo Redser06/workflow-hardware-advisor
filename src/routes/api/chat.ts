@@ -1,13 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { convertToModelMessages, streamText, stepCountIs, tool, type UIMessage } from "ai";
-import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 
 import { CHAT_MODEL, createLovableAiGatewayProvider } from "@/lib/ai-gateway.server";
 import { searchCatalog, getCatalogItemsBySlug } from "@/lib/catalog.server";
-import { lookupPrice } from "@/lib/price-lookup.server";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import type { Database } from "@/integrations/supabase/types";
+import { readStoredPrice, type PriceResult } from "@/lib/price-lookup.server";
+import { bearerFromRequest, verifyBearer } from "@/lib/verify-bearer.server";
+
+/** Per-user daily ceiling on chat turns. Protects the shared AI budget. */
+const DAILY_MESSAGE_LIMIT = 80;
+/** Tool-call budget for one reply. Four tools, a handful of retries, no runaway loops. */
+const MAX_STEPS = 20;
 
 const SYSTEM_PROMPT = `You are Hardware Fit, a hardware buying analyst.
 
@@ -33,6 +36,9 @@ PRODUCING THE ANALYSIS
 4. Call check_price for each machine you intend to recommend.
 5. Call record_recommendation with exactly three picks: minimum_viable, balanced, longest_life. They must be three DIFFERENT machines. If fewer than three qualify, widen the search once (raise the budget ceiling by up to 20%, or relax the least critical requirement) and say in your reply what you widened and why. Each pick needs the honest trade-off it makes, not just its strengths.
 6. In your written reply, do not repeat the tables the app already renders. Say only what the structured output cannot: which requirement was hardest to satisfy, and what you would check before buying.
+
+PRICES
+- A price is only as good as its provenance. check_price returns a confidence: "verified" means a confirmed retail listing, "estimated" means a rough figure from public listings, "unverified" means a catalog baseline nobody has confirmed. Say so plainly when a pick rests on an estimated or unverified figure, and tell the user to confirm it with the retailer before buying.
 
 EXPLAINING SPECS
 When a spec drives the decision, explain it in one sentence in plain terms, at the point it matters. Examples of what people get wrong and you should correct when relevant: processor generation matters more than the tier name; soldered memory cannot be increased later; unified memory is shared between the processor and graphics; graphics memory, not system memory, sets the largest AI model that will run; sustained cooling matters more than peak speed for long jobs.`;
@@ -63,36 +69,29 @@ const requirementSchema = z.object({
   reason: z.string().describe("one line tying the figure to something the user said"),
 });
 
+// The model chooses WHICH machine and WHY. It never supplies price facts: those
+// are taken from the check_price call recorded server-side in this request.
 const pickSchema = z.object({
   tier: z.enum(["minimum_viable", "balanced", "longest_life"]),
   catalog_slug: z.string(),
-  price_usd: z.number(),
-  price_live: z.boolean(),
-  price_checked_at: z.string(),
   fits_because: z.string().describe("what it does well for THIS workload, in one or two lines"),
   gives_up: z.string().describe("the honest trade-off this pick makes"),
 });
+
+function textOf(message: UIMessage) {
+  return message.parts
+    .map((part) => (part.type === "text" ? part.text : ""))
+    .join(" ")
+    .trim();
+}
 
 export const Route = createFileRoute("/api/chat")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const authHeader = request.headers.get("authorization") ?? "";
-        const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
-        if (!token) return new Response("Unauthorized", { status: 401 });
-
-        const supabaseUrl = process.env["SUPABASE_URL"];
-        const publishableKey = process.env["SUPABASE_PUBLISHABLE_KEY"];
-        if (!supabaseUrl || !publishableKey) {
-          return new Response("Backend not configured", { status: 500 });
-        }
-
-        const authClient = createClient<Database>(supabaseUrl, publishableKey, {
-          auth: { persistSession: false, autoRefreshToken: false },
-        });
-        const { data: claimsData, error: claimsError } = await authClient.auth.getClaims(token);
-        const userId = claimsData?.claims?.sub;
-        if (claimsError || !userId) return new Response("Unauthorized", { status: 401 });
+        const caller = await verifyBearer(bearerFromRequest(request));
+        if (!caller) return new Response("Unauthorized", { status: 401 });
+        const { supabase, userId } = caller;
 
         const body = (await request.json()) as { messages?: UIMessage[]; sessionId?: string };
         const { messages, sessionId } = body;
@@ -100,44 +99,47 @@ export const Route = createFileRoute("/api/chat")({
           return new Response("messages and sessionId are required", { status: 400 });
         }
 
-        const { data: session } = await supabaseAdmin
+        // RLS scopes this read to the caller's own sessions: a session belonging
+        // to someone else simply does not exist for this request.
+        const { data: session } = await supabase
           .from("sessions")
-          .select("id, user_id, title")
+          .select("id, title")
           .eq("id", sessionId)
           .maybeSingle();
-        if (!session || session.user_id !== userId) {
-          return new Response("Not found", { status: 404 });
+        if (!session) return new Response("Not found", { status: 404 });
+
+        // Daily budget guard.
+        const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+        const { count } = await supabase
+          .from("messages")
+          .select("id", { count: "exact", head: true })
+          .eq("role", "user")
+          .gte("created_at", since);
+        if ((count ?? 0) >= DAILY_MESSAGE_LIMIT) {
+          return new Response("Daily message limit reached. Try again tomorrow.", { status: 429 });
         }
 
         const apiKey = process.env["LOVABLE_API_KEY"];
         if (!apiKey) return new Response("Missing AI credentials", { status: 500 });
 
-        // Persist the incoming user message before we stream.
         const incoming = messages[messages.length - 1];
-        if (incoming?.role === "user") {
-          const { error: insertError } = await supabaseAdmin.from("messages").insert({
-            session_id: sessionId,
-            user_id: userId,
-            role: "user",
-            ui_message: incoming as never,
-          });
-          if (insertError) console.error("[chat] failed to save user message", insertError.message);
+        const userMessage = incoming?.role === "user" ? incoming : null;
 
-          if (session.title === "New analysis") {
-            const text = incoming.parts
-              .map((p) => (p.type === "text" ? p.text : ""))
-              .join(" ")
-              .trim();
-            if (text) {
-              await supabaseAdmin
-                .from("sessions")
-                .update({ title: text.slice(0, 60), updated_at: new Date().toISOString() })
-                .eq("id", sessionId);
-            }
+        if (userMessage && session.title === "New analysis") {
+          const text = textOf(userMessage);
+          if (text) {
+            await supabase
+              .from("sessions")
+              .update({ title: text.slice(0, 60), updated_at: new Date().toISOString() })
+              .eq("id", sessionId);
           }
         }
 
         let latestProfileId: string | null = null;
+        // Prices actually looked up during this request, keyed by slug. The
+        // recommendation writer reads from here and ignores anything the model
+        // claims about price.
+        const priceLedger = new Map<string, PriceResult>();
 
         const gateway = createLovableAiGatewayProvider(apiKey);
 
@@ -145,7 +147,7 @@ export const Route = createFileRoute("/api/chat")({
           model: gateway(CHAT_MODEL),
           system: SYSTEM_PROMPT,
           messages: await convertToModelMessages(messages),
-          stopWhen: stepCountIs(50),
+          stopWhen: stepCountIs(MAX_STEPS),
           tools: {
             search_catalog: tool({
               description:
@@ -155,17 +157,13 @@ export const Route = createFileRoute("/api/chat")({
             }),
             check_price: tool({
               description:
-                "Look up the current retail price for one catalog machine. Call once per machine you plan to recommend, immediately before recommending it.",
+                "Look up the recorded price for one catalog machine, with its provenance. Call once per machine you plan to recommend, before recommending it.",
               inputSchema: z.object({ catalog_slug: z.string() }),
               execute: async ({ catalog_slug }) => {
-                const [item] = await getCatalogItemsBySlug([catalog_slug]);
-                if (!item) return { error: `no catalog machine with slug ${catalog_slug}` };
-                return lookupPrice({
-                  slug: item.slug,
-                  name: item.name,
-                  brand: item.brand,
-                  baselinePriceUsd: item.baseline_price_usd,
-                });
+                const price = await readStoredPrice({ slug: catalog_slug });
+                if ("error" in price) return price;
+                priceLedger.set(price.slug, price);
+                return price;
               },
             }),
             record_workload_profile: tool({
@@ -178,7 +176,7 @@ export const Route = createFileRoute("/api/chat")({
                 requirements: z.array(requirementSchema),
               }),
               execute: async ({ summary, requirements }) => {
-                const { data, error } = await supabaseAdmin
+                const { data, error } = await supabase
                   .from("workload_profiles")
                   .insert({
                     session_id: sessionId,
@@ -198,15 +196,38 @@ export const Route = createFileRoute("/api/chat")({
             }),
             record_recommendation: tool({
               description:
-                "Write the three final picks. Every price must come from a check_price call made in this conversation.",
+                "Write the three final picks. Every machine must already have been passed to check_price in this conversation; prices are taken from that call, not from you.",
               inputSchema: z.object({ picks: z.array(pickSchema) }),
               execute: async ({ picks }) => {
+                const unchecked = picks
+                  .map((p) => p.catalog_slug)
+                  .filter((slug) => !priceLedger.has(slug));
+                if (unchecked.length > 0) {
+                  return {
+                    saved: false,
+                    error: `call check_price first for: ${unchecked.join(", ")}`,
+                  };
+                }
+
                 const items = await getCatalogItemsBySlug(picks.map((p) => p.catalog_slug));
                 const enriched = picks
                   .map((pick) => {
                     const item = items.find((i) => i.slug === pick.catalog_slug);
-                    if (!item) return null;
-                    return { ...pick, machine: item };
+                    const price = priceLedger.get(pick.catalog_slug);
+                    if (!item || !price) return null;
+                    // Price facts come from the server-side lookup only.
+                    return {
+                      tier: pick.tier,
+                      catalog_slug: pick.catalog_slug,
+                      fits_because: pick.fits_because,
+                      gives_up: pick.gives_up,
+                      price_usd: price.price_usd,
+                      price_confidence: price.confidence,
+                      price_source: price.source,
+                      price_checked_at: price.checked_at,
+                      price_note: price.note,
+                      machine: item,
+                    };
                   })
                   .filter(Boolean);
 
@@ -214,7 +235,7 @@ export const Route = createFileRoute("/api/chat")({
                   return { saved: false, error: "none of those slugs exist in the catalog" };
                 }
 
-                const { error } = await supabaseAdmin.from("recommendations").insert({
+                const { error } = await supabase.from("recommendations").insert({
                   session_id: sessionId,
                   user_id: userId,
                   workload_profile_id: latestProfileId,
@@ -233,14 +254,34 @@ export const Route = createFileRoute("/api/chat")({
         return result.toUIMessageStreamResponse({
           originalMessages: messages,
           onFinish: async ({ responseMessage }) => {
-            const { error } = await supabaseAdmin.from("messages").insert({
+            // User and assistant turns are persisted together once the stream
+            // completes, so an interrupted stream cannot leave the transcript
+            // showing the user talking to themselves. A resend of the same
+            // message is deduped on (session_id, client_message_id).
+            const rows = [];
+            if (userMessage) {
+              rows.push({
+                session_id: sessionId,
+                user_id: userId,
+                role: "user",
+                client_message_id: userMessage.id,
+                ui_message: userMessage as never,
+              });
+            }
+            rows.push({
               session_id: sessionId,
               user_id: userId,
               role: "assistant",
+              client_message_id: responseMessage.id,
               ui_message: responseMessage as never,
             });
-            if (error) console.error("[chat] failed to save assistant message", error.message);
-            await supabaseAdmin
+
+            const { error } = await supabase
+              .from("messages")
+              .upsert(rows, { onConflict: "session_id,client_message_id", ignoreDuplicates: true });
+            if (error) console.error("[chat] failed to save transcript", error.message);
+
+            await supabase
               .from("sessions")
               .update({ updated_at: new Date().toISOString() })
               .eq("id", sessionId);
