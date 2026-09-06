@@ -1,4 +1,4 @@
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { createPublicClient } from "@/lib/verify-bearer.server";
 import type { Database } from "@/integrations/supabase/types";
 
 export type CatalogItem = Database["public"]["Tables"]["catalog_items"]["Row"];
@@ -23,7 +23,11 @@ export type CatalogFilter = {
  * The model supplies requirement figures; code decides what actually qualifies.
  */
 export async function searchCatalog(filter: CatalogFilter) {
-  let query = supabaseAdmin.from("catalog_items").select("*");
+  const supabase = createPublicClient();
+  if (!supabase) return { matches: [], count: 0, error: "backend not configured" };
+
+  // The catalog is public-read; an anonymous, RLS-scoped client is enough.
+  let query = supabase.from("catalog_items").select("*");
 
   if (filter.min_ram_gb != null) query = query.gte("ram_gb", filter.min_ram_gb);
   if (filter.min_storage_gb != null) query = query.gte("storage_gb", filter.min_storage_gb);
@@ -56,7 +60,9 @@ export async function searchCatalog(filter: CatalogFilter) {
 }
 
 export async function getCatalogItemsBySlug(slugs: string[]) {
-  const { data, error } = await supabaseAdmin.from("catalog_items").select("*").in("slug", slugs);
+  const supabase = createPublicClient();
+  if (!supabase) return [];
+  const { data, error } = await supabase.from("catalog_items").select("*").in("slug", slugs);
   if (error) {
     console.error("[catalog] slug lookup failed", error.message);
     return [];
