@@ -127,6 +127,7 @@ async function runDiscovery(
   }
 
   const takenSlugs = new Set(known.map((row) => row.slug));
+  const rejected: string[] = [];
   let added = 0;
 
   for (const machine of found.value) {
@@ -135,10 +136,15 @@ async function runDiscovery(
     takenSlugs.add(slug);
 
     const { error } = await admin.from("catalog_items").insert(toRow(machine, slug, gap));
-    if (!error) added += 1;
+    if (error) rejected.push(`${slug}: ${error.message}`);
+    else added += 1;
   }
 
-  return { paused: false, added, note: gap };
+  return {
+    paused: false,
+    added,
+    note: rejected.length ? `${gap} (rejected: ${rejected.join("; ")})` : gap,
+  };
 }
 
 function slugify(value: string) {
