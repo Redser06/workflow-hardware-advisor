@@ -42,6 +42,7 @@ export type Database = {
           os: string | null
           price_confidence: string
           price_source_url: string | null
+          provenance: string
           ram_gb: number
           ram_max_gb: number | null
           ram_type: string | null
@@ -82,6 +83,7 @@ export type Database = {
           os?: string | null
           price_confidence?: string
           price_source_url?: string | null
+          provenance?: string
           ram_gb: number
           ram_max_gb?: number | null
           ram_type?: string | null
@@ -122,6 +124,7 @@ export type Database = {
           os?: string | null
           price_confidence?: string
           price_source_url?: string | null
+          provenance?: string
           ram_gb?: number
           ram_max_gb?: number | null
           ram_type?: string | null
@@ -134,6 +137,33 @@ export type Database = {
           sustained_thermal_note?: string | null
           unified_memory?: boolean
           weight_kg?: number | null
+        }
+        Relationships: []
+      }
+      job_state: {
+        Row: {
+          job_name: string
+          last_result: Json | null
+          last_run_at: string | null
+          lease_expires_at: string | null
+          paused_reason: string | null
+          status: string
+        }
+        Insert: {
+          job_name: string
+          last_result?: Json | null
+          last_run_at?: string | null
+          lease_expires_at?: string | null
+          paused_reason?: string | null
+          status?: string
+        }
+        Update: {
+          job_name?: string
+          last_result?: Json | null
+          last_run_at?: string | null
+          lease_expires_at?: string | null
+          paused_reason?: string | null
+          status?: string
         }
         Relationships: []
       }
