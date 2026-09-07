@@ -90,6 +90,45 @@ function isHttpUrl(value: unknown): value is string {
   return typeof value === "string" && /^https?:\/\/\S+$/.test(value);
 }
 
+/**
+ * A search results page is not evidence that a specific machine sells for a
+ * specific price, so a source URL that looks like one is rejected outright.
+ */
+function isProductPage(value: unknown): value is string {
+  if (!isHttpUrl(value)) return false;
+  const url = new URL(value);
+  if (/search|\/pl\b|\/s\b/i.test(url.pathname)) return false;
+  for (const key of ["q", "d", "query", "keywords", "searchterm"]) {
+    if (url.searchParams.has(key)) return false;
+  }
+  return true;
+}
+
+/**
+ * A discovered machine only enters the catalog if it is described completely
+ * enough to be filtered on and priced against a real product page. Partial
+ * rows (barebone kits with no memory, missing storage) would silently distort
+ * the matching, so they are dropped rather than stored with zeroes.
+ */
+function isUsableMachine(machine: Partial<DiscoveredMachine>): machine is DiscoveredMachine {
+  return (
+    typeof machine.name === "string" &&
+    machine.name.trim().length > 2 &&
+    typeof machine.brand === "string" &&
+    machine.brand.trim().length > 1 &&
+    typeof machine.cpu_name === "string" &&
+    machine.cpu_name.trim().length > 2 &&
+    typeof machine.ram_gb === "number" &&
+    machine.ram_gb >= 4 &&
+    typeof machine.storage_gb === "number" &&
+    machine.storage_gb >= 128 &&
+    typeof machine.price_usd === "number" &&
+    machine.price_usd >= 200 &&
+    machine.price_usd <= 15000 &&
+    isProductPage(machine.source_url)
+  );
+}
+
 export type PricedMachine = {
   price_usd: number;
   source_url: string;
@@ -247,18 +286,7 @@ For each machine give its specifications and the URL of the listing the price ca
 
   if (!result.ok) return result;
 
-  const machines = (result.value.machines ?? []).filter(
-    (machine): machine is DiscoveredMachine =>
-      typeof machine.name === "string" &&
-      machine.name.length > 1 &&
-      typeof machine.brand === "string" &&
-      typeof machine.cpu_name === "string" &&
-      typeof machine.ram_gb === "number" &&
-      typeof machine.storage_gb === "number" &&
-      typeof machine.price_usd === "number" &&
-      machine.price_usd > 0 &&
-      isHttpUrl(machine.source_url),
-  );
+  const machines = (result.value.machines ?? []).filter(isUsableMachine);
 
   return { ok: true, value: machines.slice(0, args.limit) };
 }
